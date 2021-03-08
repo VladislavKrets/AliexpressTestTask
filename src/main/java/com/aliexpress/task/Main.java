@@ -7,6 +7,7 @@ import java.io.*;
 import java.lang.reflect.AccessibleObject;
 import java.lang.reflect.Field;
 import java.net.*;
+import java.time.Instant;
 import java.util.stream.Stream;
 
 public class Main {
@@ -37,7 +38,7 @@ public class Main {
                                              int limit, String postback) throws IOException {
         HttpURLConnection httpURLConnection = (HttpURLConnection) new URL(
                 "https://gpsfront.aliexpress.com/getRecommendingResults.do?" +
-                        "callback=jQuery18306906079412524295_1615237663848" +
+                        "callback=jQuery18306906079412524295_" + System.currentTimeMillis() +
                         "&widget_id=5547572" +
                         "&platform=pc" +
                         "&limit=" + limit +
@@ -45,7 +46,7 @@ public class Main {
                         "&phase=1" +
                         "&productIds2Top=" +
                         "&postback=" + postback +
-                        "&_=161523767864").openConnection(proxy);
+                        "&_=" + System.currentTimeMillis()).openConnection(proxy);
         httpURLConnection.setRequestMethod("GET");
         StringBuilder respBody = new StringBuilder();
         BufferedReader reader = new BufferedReader(new InputStreamReader(httpURLConnection.getInputStream()));
