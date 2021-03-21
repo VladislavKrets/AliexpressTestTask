@@ -19,13 +19,13 @@ public class Main {
                 .map(Field::getName).toArray(String[]::new);
         writer.writeNext(fields);
         Gson gson = new Gson();
-/*        Proxy proxy = new Proxy(Proxy.Type.HTTP,
-                new InetSocketAddress("192.168.49.1", 8282));*/
+        Proxy proxy = new Proxy(Proxy.Type.HTTP,
+                new InetSocketAddress("192.168.49.1", 8282));
         int limit = 50;
         String postback = "";
         for (int i = 0; i < maxFields; i += 40) {
             if (maxFields - i < 40) limit = 20;
-            StringBuilder respBody = getJsonData(i, limit, postback);
+            StringBuilder respBody = getJsonData(proxy, i, limit, postback);
             String jsonData = respBody.substring(respBody.indexOf("(") + 1, respBody.length() - 2);
             AnswerData answerData = gson.fromJson(jsonData, AnswerData.class);
             postback = answerData.getPostback();
@@ -34,7 +34,7 @@ public class Main {
         writer.close();
     }
 
-    private static StringBuilder getJsonData(int offset,
+    private static StringBuilder getJsonData(Proxy proxy, int offset,
                                              int limit, String postback) throws IOException {
         HttpURLConnection httpURLConnection = (HttpURLConnection) new URL(
                 "https://gpsfront.aliexpress.com/getRecommendingResults.do?" +
@@ -46,7 +46,7 @@ public class Main {
                         "&phase=1" +
                         "&productIds2Top=" +
                         "&postback=" + postback +
-                        "&_=" + System.currentTimeMillis()).openConnection();
+                        "&_=" + System.currentTimeMillis()).openConnection(proxy);
         httpURLConnection.setRequestMethod("GET");
         StringBuilder respBody = new StringBuilder();
         BufferedReader reader = new BufferedReader(new InputStreamReader(httpURLConnection.getInputStream()));
@@ -62,7 +62,7 @@ public class Main {
         for (Product product : answerData.getResults()) {
             fieldData = Stream.of(fields).map(x -> {
                 try {
-                    return x.get(product).toString();
+                    return x.get(product) == null ? "" : x.get(product).toString();
                 } catch (IllegalAccessException e) {
                     e.printStackTrace();
                 }
